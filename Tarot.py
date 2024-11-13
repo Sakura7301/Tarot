@@ -23,10 +23,16 @@ class Tarot(Plugin):
         self.CARDS_DIR =  "./plugins/Tarot/image"     # 定义塔罗牌目录  
         self.OUTPUT_DIR = "./plugins/Tarot/temp"  # 定义输出目录  
         self.delete_all_files_in_directory(self.OUTPUT_DIR)
+        # 注册处理上下文的事件  
+        self.handlers[Event.ON_HANDLE_CONTEXT] = self.on_handle_context  
         logger.info("[Tarot] 插件初始化完毕")  
 
     def delete_all_files_in_directory(self, directory):  
         """删除指定目录下的所有文件"""  
+        if not os.path.exists(directory):  
+            logger.warning(f"目录不存在: {directory}")  
+            return "目录不存在"  # 返回特定消息  
+
         try:  
             # 遍历目录中的所有文件和子目录  
             for filename in os.listdir(directory):  
@@ -34,7 +40,18 @@ class Tarot(Plugin):
                 # 检查是否是文件  
                 if os.path.isfile(file_path):  
                     os.remove(file_path)  # 删除文件  
-                    logger.info("已清除塔罗牌历史记录")  
+                    logger.info(f"已清除文件: {file_path}")  
+        except Exception as e:  
+            logger.error(f"发生错误: {e}")   
+
+    def ensure_directory_exists(self, directory):  
+        """检查指定目录是否存在，如果不存在则创建该目录"""  
+        try:  
+            if not os.path.exists(directory):  
+                os.makedirs(directory)  # 创建目录  
+                logger.info(f"目录已创建: {directory}")  
+            else:  
+                logger.debug(f"目录已存在: {directory}")  
         except Exception as e:  
             logger.error(f"发生错误: {e}")  
 
@@ -104,6 +121,9 @@ class Tarot(Plugin):
         
         # 生成路径  
         output_filename += ".png"  
+        # 检查目录是否存在
+        self.ensure_directory_exists(self.OUTPUT_DIR)
+        # 生成路径
         output_path = os.path.join(self.OUTPUT_DIR, output_filename)   
 
         # 检查文件是否已存在  
@@ -151,6 +171,9 @@ class Tarot(Plugin):
 
         # 生成路径  
         output_filename += ".png"  
+        # 检查目录是否存在
+        self.ensure_directory_exists(self.OUTPUT_DIR)
+        # 生成路径
         output_path = os.path.join(self.OUTPUT_DIR, output_filename)   
 
         # 检查文件是否已存在  
@@ -222,6 +245,9 @@ class Tarot(Plugin):
 
         # 生成路径  
         output_filename += ".png"  
+        # 检查目录是否存在
+        self.ensure_directory_exists(self.OUTPUT_DIR)
+        # 生成路径
         output_path = os.path.join(self.OUTPUT_DIR, output_filename)   
 
         # 检查文件是否已存在  
@@ -320,5 +346,5 @@ class Tarot(Plugin):
             e_context.action = EventAction.BREAK_PASS  # 事件结束，并跳过处理context的默认逻辑
     def get_help_text(self, **kwargs):  
         """获取帮助文本"""  
-        help_text = "请按照以下格式：\n[每日一卦]：回复随机卦图\n[卦图+卦名]：回复指定卦图\n"  
+        help_text = "请按照以下格式：\n[抽牌]：获取你的单张塔罗牌\n[三牌阵]：获取塔罗牌三牌阵\n[十字牌阵]：获取塔罗牌十字牌阵\n"  
         return help_text
